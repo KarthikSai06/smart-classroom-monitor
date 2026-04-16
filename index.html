@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Classroom Engagement Analyzer</title>
+  <meta name="description" content="AI-powered classroom engagement analysis — real-time emotion detection, participation tracking, and actionable teacher insights." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><text y='.9em' font-size='70' x='12'>🎓</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar dark" id="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="nav-logo-text">Smart<span>Class</span></div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="index.html"    class="nav-link" data-page="index.html">Home</a></li>
+      <li><a href="index.html#how-it-works" class="nav-link">How It Works</a></li>
+      <li><a href="features.html" class="nav-link" data-page="features.html">Features</a></li>
+      <li><a href="camera.html"   class="nav-link" data-page="camera.html">Live Camera</a></li>
+      <li><a href="demo.html"     class="nav-link" data-page="demo.html">NLP Demo</a></li>
+    </ul>
+
+    <a href="demo.html" class="btn btn-white nav-cta" style="padding:9px 20px; font-size:.85rem;">
+      Try Demo →
+    </a>
+
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- mobile -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="index.html"    class="nav-link" data-page="index.html">Home</a>
+  <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+  <a href="features.html" class="nav-link">Features</a>
+  <a href="camera.html"   class="nav-link">Live Camera</a>
+  <a href="demo.html"     class="nav-link">NLP Demo</a>
+  <a href="camera.html" class="btn btn-primary" style="margin-top:8px;">Start Camera →</a>
+</div>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+
+  <div class="container hero-inner">
+
+    <!-- Left -->
+    <div class="hero-content">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        AI-Powered Education Analytics
+      </div>
+
+      <h1 class="hero-title">
+        Smart Classroom<br>
+        <span class="highlight">Engagement Analyzer</span>
+      </h1>
+
+      <p class="hero-desc">
+        Transform your classroom into a data-driven learning environment.
+        Our platform uses IoT sensors, computer vision, and NLP to monitor
+        student attention in real time — giving teachers instant, actionable
+        insights without disrupting the learning experience.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#how-it-works" class="btn btn-primary" id="learnMoreBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          Learn More
+        </a>
+        <a href="demo.html" class="btn btn-ghost">Try Live Demo</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-value" data-counter data-target="95" data-suffix="%">0%</div>
+          <div class="stat-label">Detection Accuracy</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" data-counter data-target="12" data-suffix="ms">0ms</div>
+          <div class="stat-label">Avg Latency</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" data-counter data-target="500" data-suffix="+">0+</div>
+          <div class="stat-label">Classrooms Active</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right — mock dashboard -->
+    <div class="hero-visual">
+      <div class="hero-dashboard">
+        <div class="dash-header">
+          <div class="dash-title">📊 Live Engagement Overview</div>
+          <div class="dash-live">
+            <div class="dash-live-dot"></div>
+            LIVE
+          </div>
+        </div>
+
+        <div class="dash-metrics">
+          <div class="metric-card">
+            <div class="metric-label">Engagement Score</div>
+            <div class="metric-value green">78%</div>
+            <div class="metric-change up">↑ +5% vs yesterday</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Students Present</div>
+            <div class="metric-value">32 / 35</div>
+            <div class="metric-change">3 absent today</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Attention</div>
+            <div class="metric-value yellow">68%</div>
+            <div class="metric-change down">↓ −2% this period</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Alerts</div>
+            <div class="metric-value red">3</div>
+            <div class="metric-change">Low attention flags</div>
+          </div>
+        </div>
+
+        <div class="emotion-section">
+          <div class="emotion-label">Emotion Distribution</div>
+          <div class="emotion-bars">
+            <div class="emotion-row">
+              <div class="emotion-name">Focused</div>
+              <div class="emotion-bar-wrap">
+                <div class="emotion-bar-fill" style="width:62%;background:linear-gradient(90deg,#22c55e,#4ade80)"></div>
+              </div>
+              <div class="emotion-pct">62%</div>
+            </div>
+            <div class="emotion-row">
+              <div class="emotion-name">Neutral</div>
+              <div class="emotion-bar-wrap">
+                <div class="emotion-bar-fill" style="width:25%;background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div>
+              </div>
+              <div class="emotion-pct">25%</div>
+            </div>
+            <div class="emotion-row">
+              <div class="emotion-name">Confused</div>
+              <div class="emotion-bar-wrap">
+                <div class="emotion-bar-fill" style="width:9%;background:linear-gradient(90deg,#a855f7,#c084fc)"></div>
+              </div>
+              <div class="emotion-pct">9%</div>
+            </div>
+            <div class="emotion-row">
+              <div class="emotion-name">Bored</div>
+              <div class="emotion-bar-wrap">
+                <div class="emotion-bar-fill" style="width:4%;background:linear-gradient(90deg,#f97316,#fb923c)"></div>
+              </div>
+              <div class="emotion-pct">4%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="activity-section">
+          <div class="activity-label">Participation Activity (last 60 min)</div>
+          <div class="sparkline">
+            <div class="spark-bar" style="height:35%"></div>
+            <div class="spark-bar" style="height:55%"></div>
+            <div class="spark-bar" style="height:70%"></div>
+            <div class="spark-bar" style="height:45%"></div>
+            <div class="spark-bar" style="height:80%"></div>
+            <div class="spark-bar" style="height:90%"></div>
+            <div class="spark-bar" style="height:60%"></div>
+            <div class="spark-bar" style="height:75%"></div>
+            <div class="spark-bar" style="height:50%"></div>
+            <div class="spark-bar" style="height:85%"></div>
+            <div class="spark-bar" style="height:68%"></div>
+            <div class="spark-bar" style="height:72%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section class="section" id="how-it-works">
+  <div class="container">
+    <div class="text-center reveal">
+      <div class="tag">Process</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">
+        Three seamless steps — from raw sensor data to clear, actionable reports on your dashboard.
+      </p>
+    </div>
+
+    <div class="steps-grid">
+
+      <!-- Step 1 -->
+      <div class="step-card reveal delay-1">
+        <div class="step-number">1</div>
+        <div class="step-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.362a1 1 0 01-1.447.894L15 14"/>
+            <rect x="1" y="6" width="14" height="12" rx="2"/>
+          </svg>
+        </div>
+        <h3 class="step-title">Data Capture</h3>
+        <p class="step-desc">
+          IoT cameras and microphones embedded in the classroom continuously capture
+          facial expressions, body language, and spoken audio — all processed
+          locally for maximum privacy.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card reveal delay-2">
+        <div class="step-number">2</div>
+        <div class="step-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </div>
+        <h3 class="step-title">AI Analysis</h3>
+        <p class="step-desc">
+          Deep learning models analyze attention levels, detected emotions,
+          speech patterns, and participation rates in real time — producing
+          per-student engagement scores every 30 seconds.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card reveal delay-3">
+        <div class="step-number">3</div>
+        <div class="step-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18M9 21V9"/>
+          </svg>
+        </div>
+        <h3 class="step-title">Teacher Insights</h3>
+        <p class="step-desc">
+          Teachers receive beautifully visualised, easy-to-read engagement reports
+          on their dashboard — with natural language queries, trend analysis,
+          and personalised recommendations.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA STRIP ===================== -->
+<section style="background:var(--grad-hero); padding-block:72px; text-align:center; position:relative; overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px"></div>
+  <div class="container" style="position:relative">
+    <div class="tag" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:var(--primary-200)">Get Started</div>
+    <h2 class="section-title reveal" style="color:#fff;margin-bottom:16px">Ready to transform your classroom?</h2>
+    <p class="section-subtitle reveal delay-1" style="color:rgba(255,255,255,.7);margin:0 auto 32px">
+      Explore all features or jump straight into the live NLP demo.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="features.html" class="btn btn-white reveal delay-2">Explore Features</a>
+      <a href="demo.html"     class="btn btn-ghost  reveal delay-3">Try Live Demo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:0">
+          <div class="nav-logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="nav-logo-text">Smart<span>Class</span></div>
+        </a>
+        <p class="footer-tagline">
+          Empowering teachers with AI-driven classroom insights — 
+          improving student outcomes through data, not guesswork.
+        </p>
+        <div class="footer-social">
+          <a href="#" class="social-btn" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.62-2.81 5.64-5.49 5.94.43.37.82 1.1.82 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="Twitter">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.95 4.57a10 10 0 01-2.82.77 4.96 4.96 0 002.16-2.72c-.95.55-2 .95-3.12 1.19a4.92 4.92 0 00-8.38 4.49A13.95 13.95 0 011.64 3.16a4.92 4.92 0 001.52 6.57 4.9 4.9 0 01-2.23-.61v.06a4.92 4.92 0 003.95 4.83 4.94 4.94 0 01-2.22.08 4.93 4.93 0 004.6 3.42A9.87 9.87 0 010 19.54a13.94 13.94 0 007.55 2.21c9.06 0 14.01-7.5 14.01-14.01 0-.21 0-.42-.02-.63A10 10 0 0024 4.59l-.05-.02z"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55V15c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.55H9.36V8.99h3.41v1.56h.05c.47-.89 1.63-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.3zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM3.56 20.45h3.55V9H3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Navigate</div>
+        <ul class="footer-links">
+          <li><a href="index.html"    class="footer-link">Home</a></li>
+          <li><a href="index.html#how-it-works" class="footer-link">How It Works</a></li>
+          <li><a href="features.html" class="footer-link">Features</a></li>
+          <li><a href="demo.html"     class="footer-link">Live Demo</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Features</div>
+        <ul class="footer-links">
+          <li><a href="features.html" class="footer-link">Emotion Detection</a></li>
+          <li><a href="features.html" class="footer-link">Participation Analysis</a></li>
+          <li><a href="features.html" class="footer-link">Teacher Dashboard</a></li>
+          <li><a href="features.html" class="footer-link">NLP Query Interface</a></li>
+          <li><a href="features.html" class="footer-link">Privacy & Compliance</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Contact</div>
+        <ul class="footer-links">
+          <li><a href="#" class="footer-link">support@smartclass.ai</a></li>
+          <li><a href="#" class="footer-link">Documentation</a></li>
+          <li><a href="#" class="footer-link">API Reference</a></li>
+          <li><a href="#" class="footer-link">Privacy Policy</a></li>
+          <li><a href="#" class="footer-link">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SmartClass AI. All rights reserved.</p>
+      <p class="footer-built">Built with <span>♥</span> for better education</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

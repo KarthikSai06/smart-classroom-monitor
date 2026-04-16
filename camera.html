@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Camera — Smart Classroom Engagement Analyzer</title>
+  <meta name="description" content="Real-time student engagement monitoring using AI emotion detection directly in your browser — no server required."/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><text y='.9em' font-size='70' x='12'>🎓</text></svg>"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/animations.css"/>
+  <style>
+    /* ---- Page-specific overrides ---- */
+    body { background: var(--neutral-900); color: var(--white); }
+
+    /* ---- Camera layout ---- */
+    .cam-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+      padding: calc(var(--nav-h) + 20px) 24px 24px;
+      min-height: 100vh;
+    }
+
+    /* ---- Video panel ---- */
+    .video-panel {
+      background: #000;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    #videoEl {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scaleX(-1); /* mirror */
+    }
+    #overlayCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      /* No transform: we flip coordinates manually in JS so text reads correctly */
+    }
+
+    /* Placeholder (shown before camera starts) */
+    .cam-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: rgba(255,255,255,.35);
+      z-index: 2;
+    }
+    .cam-placeholder svg { width: 72px; height: 72px; opacity: .4; }
+    .cam-placeholder p { font-size: .95rem; }
+    .cam-placeholder.hidden { display: none; }
+
+    /* Loading overlay */
+    .cam-loading {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 10;
+      border-radius: var(--radius-xl);
+    }
+    .cam-loading.hidden { display: none; }
+    .cam-loading-text { font-size: .95rem; color: rgba(255,255,255,.8); }
+    .cam-loading-bar {
+      width: 220px;
+      height: 4px;
+      background: rgba(255,255,255,.12);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .cam-loading-fill {
+      height: 100%;
+      background: var(--grad-btn);
+      border-radius: 2px;
+      width: 0%;
+      transition: width .4s ease;
+    }
+
+    /* Corner info badges */
+    .cam-badge {
+      position: absolute;
+      top: 16px;
+      font-size: .75rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(10px);
+    }
+    .cam-badge-left {
+      left: 16px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.12);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .cam-badge-right {
+      right: 16px;
+      background: rgba(59,130,246,.25);
+      border: 1px solid rgba(59,130,246,.4);
+      color: var(--primary-200);
+    }
+    .live-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse-dot 1.5s infinite;
+    }
+    .live-dot.red { background: #f87171; }
+
+    /* Face count pill */
+    .face-count-pill {
+      position: absolute;
+      bottom: 16px; left: 16px;
+      background: rgba(0,0,0,.6);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius-full);
+      padding: 6px 14px;
+      font-size: .8rem;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ---- Controls bar ---- */
+    .controls-bar {
+      position: absolute;
+      bottom: 16px; right: 16px;
+      display: flex; gap: 10px;
+    }
+    .ctrl-btn {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      border: none;
+      cursor: pointer;
+      font-size: .8rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .ctrl-btn:hover { transform: scale(1.08); }
+    .ctrl-btn svg { width: 18px; height: 18px; }
+    .ctrl-start { background: var(--grad-btn); color: #fff; box-shadow: 0 4px 16px rgba(37,99,235,.5); }
+    .ctrl-stop  { background: #ef4444; color: #fff; box-shadow: 0 4px 16px rgba(239,68,68,.5); display:none; }
+    .ctrl-snap  { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.2); }
+
+    /* ---- Side panel ---- */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      max-height: calc(100vh - var(--nav-h) - 44px);
+    }
+
+    .panel-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+    }
+    .panel-title {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title svg { width: 14px; height: 14px; }
+
+    /* Big metric */
+    .big-metric {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .big-metric-val {
+      font-family: var(--font-head);
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--white);
+    }
+    .big-metric-unit {
+      font-size: .85rem;
+      color: rgba(255,255,255,.4);
+      margin-bottom: 6px;
+    }
+    .big-metric-label {
+      font-size: .78rem;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 6px;
+    }
+
+    /* Emotion bars */
+    .em-bar-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .em-bar-label {
+      width: 72px;
+      font-size: .73rem;
+      color: rgba(255,255,255,.55);
+      text-transform: capitalize;
+      flex-shrink: 0;
+    }
+    .em-bar-track {
+      flex: 1; height: 6px;
+      background: rgba(255,255,255,.08);
+      border-radius: 3px; overflow: hidden;
+    }
+    .em-bar-fill {
+      height: 100%; border-radius: 3px;
+      transition: width .5s ease;
+    }
+    .em-bar-pct {
+      width: 30px; text-align: right;
+      font-size: .72rem;
+      color: rgba(255,255,255,.45);
+    }
+
+    /* Sparkline mini */
+    .mini-spark {
+      display: flex; align-items: flex-end;
+      gap: 3px; height: 40px; margin-top: 8px;
+    }
+    .mini-spark-bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--primary-600), var(--accent));
+      border-radius: 2px 2px 0 0;
+      opacity: .7;
+      transition: height .4s ease;
+    }
+
+    /* Alert list */
+    .alert-item {
+      display: flex; align-items: flex-start;
+      gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .alert-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .alert-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      margin-top: 5px; flex-shrink: 0;
+    }
+    .alert-text { font-size: .82rem; color: rgba(255,255,255,.7); }
+    .alert-time { font-size: .72rem; color: rgba(255,255,255,.3); margin-top: 2px; }
+
+    /* Session stats row */
+    .sess-row {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .sess-stat {
+      flex: 1; min-width: 70px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+    }
+    .sess-stat-val {
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--white); font-family: var(--font-head);
+    }
+    .sess-stat-lbl {
+      font-size: .68rem; color: rgba(255,255,255,.4); margin-top: 3px;
+    }
+
+    /* ---- Error banner ---- */
+    .error-banner {
+      display: none;
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      background: #7f1d1d;
+      border: 1px solid #ef4444;
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+      font-size: .88rem;
+      color: #fca5a5;
+      z-index: 999;
+      max-width: 460px; width: 90%;
+      text-align: center;
+    }
+    .error-banner.visible { display: block; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 900px) {
+      .cam-layout {
+        grid-template-columns: 1fr;
+        padding-top: calc(var(--nav-h) + 12px);
+      }
+      .side-panel { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar" id="navbar" style="background:rgba(15,23,42,.92);backdrop-filter:blur(20px);">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="nav-logo-text" style="color:#fff">Smart<span>Class</span></div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="index.html"    class="nav-link" style="color:rgba(255,255,255,.7)">Home</a></li>
+      <li><a href="features.html" class="nav-link" style="color:rgba(255,255,255,.7)">Features</a></li>
+      <li><a href="camera.html"   class="nav-link" style="color:#fff;background:rgba(255,255,255,.12)">Live Camera</a></li>
+      <li><a href="demo.html"     class="nav-link" style="color:rgba(255,255,255,.7)">NLP Demo</a></li>
+    </ul>
+
+    <button id="navStartBtn" class="btn btn-primary nav-cta" style="padding:9px 20px;font-size:.85rem;">
+      Start Camera
+    </button>
+
+    <button class="hamburger" id="hamburger" style="color:#fff">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="index.html"    class="nav-link">Home</a>
+  <a href="features.html" class="nav-link">Features</a>
+  <a href="camera.html"   class="nav-link">Live Camera</a>
+  <a href="demo.html"     class="nav-link">NLP Demo</a>
+</div>
+
+<!-- ===================== MAIN LAYOUT ===================== -->
+<div class="cam-layout">
+
+  <!-- ---- Video Panel ---- -->
+  <div class="video-panel" id="videoPanel">
+
+    <!-- Placeholder before start -->
+    <div class="cam-placeholder" id="camPlaceholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.362a1 1 0 01-1.447.894L15 14"/>
+        <rect x="1" y="6" width="14" height="12" rx="2"/>
+      </svg>
+      <p>Press <strong>Start Camera</strong> to begin real-time emotion analysis</p>
+    </div>
+
+    <!-- Model loading overlay -->
+    <div class="cam-loading" id="camLoading" style="display:none">
+      <div style="font-size:2rem">🧠</div>
+      <div class="cam-loading-text" id="loadingText">Loading AI models…</div>
+      <div class="cam-loading-bar">
+        <div class="cam-loading-fill" id="loadingFill"></div>
+      </div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:4px" id="loadingDetail">Initialising TensorFlow.js…</div>
+    </div>
+
+    <!-- Actual video & canvas -->
+    <video id="videoEl" autoplay muted playsinline style="display:none"></video>
+    <canvas id="overlayCanvas" style="display:none"></canvas>
+
+    <!-- Live badge (top-left) -->
+    <div class="cam-badge cam-badge-left" id="liveBadge" style="display:none">
+      <div class="live-dot" id="liveDot"></div>
+      <span id="liveLabel">LIVE</span>
+    </div>
+
+    <!-- FPS badge (top-right) -->
+    <div class="cam-badge cam-badge-right" id="fpsBadge" style="display:none">
+      <span id="fpsLabel">0 fps</span>
+    </div>
+
+    <!-- Face count -->
+    <div class="face-count-pill" id="faceCountPill" style="display:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      <span id="faceCountLabel">0 faces detected</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <button class="ctrl-btn ctrl-snap" id="snapBtn" title="Take snapshot" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M5.636 5.636A9 9 0 1 0 18.364 18.364"/>
+          <path d="M3 9l2-2 2 2"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn ctrl-stop" id="stopBtn" title="Stop camera">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="6" y="6" width="12" height="12" rx="1"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn ctrl-start" id="startBtn" title="Start camera">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.362a1 1 0 01-1.447.894L15 14"/>
+          <rect x="1" y="6" width="14" height="12" rx="2"/>
+        </svg>
+      </button>
+    </div>
+
+  </div><!-- /video-panel -->
+
+  <!-- ---- Side Panel ---- -->
+  <div class="side-panel">
+
+    <!-- Attention score -->
+    <div class="panel-card">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        Attention Score
+      </div>
+      <div class="big-metric">
+        <div class="big-metric-val" id="attVal">—</div>
+        <div class="big-metric-unit">%</div>
+      </div>
+      <div class="big-metric-label" id="attLabel">Waiting for camera…</div>
+      <div class="mini-spark" id="attSpark">
+        <!-- JS fills this -->
+      </div>
+    </div>
+
+    <!-- Emotion breakdown -->
+    <div class="panel-card">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        Live Emotions
+      </div>
+      <div id="emotionBars">
+        <!-- JS renders these -->
+        <div style="font-size:.82rem;color:rgba(255,255,255,.3);text-align:center;padding:12px 0">
+          Start camera to see live emotion data
+        </div>
+      </div>
+    </div>
+
+    <!-- Session stats -->
+    <div class="panel-card">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Session Stats
+      </div>
+      <div class="sess-row">
+        <div class="sess-stat">
+          <div class="sess-stat-val" id="sessTime">0:00</div>
+          <div class="sess-stat-lbl">Duration</div>
+        </div>
+        <div class="sess-stat">
+          <div class="sess-stat-val" id="sessFrames">0</div>
+          <div class="sess-stat-lbl">Frames</div>
+        </div>
+        <div class="sess-stat">
+          <div class="sess-stat-val" id="sessFaces">0</div>
+          <div class="sess-stat-lbl">Faces</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- alerts / insights -->
+    <div class="panel-card">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        Alerts &amp; Insights
+      </div>
+      <div id="alertList">
+        <div class="alert-item">
+          <div class="alert-dot" style="background:rgba(255,255,255,.2)"></div>
+          <div>
+            <div class="alert-text">System ready — start camera to begin analysis</div>
+            <div class="alert-time">Now</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- export/link -->
+    <div class="panel-card" style="background:linear-gradient(135deg,rgba(37,99,235,.2),rgba(6,182,212,.15));border-color:rgba(59,130,246,.2)">
+      <div class="panel-title" style="color:var(--primary-300)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Ask About This Session
+      </div>
+      <p style="font-size:.82rem;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.6">
+        Ask the AI a question about what it just observed in your classroom.
+      </p>
+      <a href="demo.html" class="btn btn-primary" style="width:100%;justify-content:center;font-size:.85rem;padding:11px 16px">
+        Open NLP Demo →
+      </a>
+    </div>
+
+  </div><!-- /side-panel -->
+
+</div><!-- /cam-layout -->
+
+<!-- Error banner -->
+<div class="error-banner" id="errorBanner">
+  ⚠️ <span id="errorText">Camera access was denied. Please allow camera permissions and reload.</span>
+</div>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script src="libs/face-api.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/emotion.js"></script>
+<script>
+/* ============================================================
+   Camera page controller
+   ============================================================ */
+
+const MODEL_PATH = './models';
+
+/* ---- DOM ---- */
+const videoEl       = document.getElementById('videoEl');
+const overlayCanvas = document.getElementById('overlayCanvas');
+const camPlaceholder = document.getElementById('camPlaceholder');
+const camLoading    = document.getElementById('camLoading');
+const loadingText   = document.getElementById('loadingText');
+const loadingFill   = document.getElementById('loadingFill');
+const loadingDetail = document.getElementById('loadingDetail');
+const liveBadge     = document.getElementById('liveBadge');
+const liveDot       = document.getElementById('liveDot');
+const liveLabel     = document.getElementById('liveLabel');
+const fpsBadge      = document.getElementById('fpsBadge');
+const fpsLabel      = document.getElementById('fpsLabel');
+const faceCountPill = document.getElementById('faceCountPill');
+const faceCountLabel= document.getElementById('faceCountLabel');
+const startBtn      = document.getElementById('startBtn');
+const stopBtn       = document.getElementById('stopBtn');
+const snapBtn       = document.getElementById('snapBtn');
+const navStartBtn   = document.getElementById('navStartBtn');
+const errorBanner   = document.getElementById('errorBanner');
+const errorText     = document.getElementById('errorText');
+
+/* ---- Metrics DOM ---- */
+const attVal    = document.getElementById('attVal');
+const attLabel  = document.getElementById('attLabel');
+const attSpark  = document.getElementById('attSpark');
+const emotionBarsEl = document.getElementById('emotionBars');
+const sessTime  = document.getElementById('sessTime');
+const sessFrames= document.getElementById('sessFrames');
+const sessFaces = document.getElementById('sessFaces');
+const alertList = document.getElementById('alertList');
+
+/* ---- State ---- */
+let modelsLoaded = false;
+let running      = false;
+let lastFrameTime = 0;
+let fps = 0;
+let fpsCounter = 0;
+let fpsTimer = null;
+let sparkData = Array(20).fill(50);
+let alerts = [
+  { colour: 'rgba(255,255,255,.2)', text: 'System ready — start camera to begin analysis', time: 'Now' }
+];
+
+/* ---- FPS counter ---- */
+const startFPSCounter = () => {
+  fpsCounter = 0;
+  fpsTimer = setInterval(() => {
+    fps = fpsCounter;
+    fpsLabel.textContent = `${fps} fps`;
+    fpsCounter = 0;
+  }, 1000);
+};
+const stopFPSCounter = () => { clearInterval(fpsTimer); fpsCounter = 0; };
+
+/* ---- Show error ---- */
+const showError = (msg) => {
+  errorText.textContent = msg;
+  errorBanner.classList.add('visible');
+  setTimeout(() => errorBanner.classList.remove('visible'), 6000);
+};
+
+/* ---- Render emotion bars ---- */
+const EMOTION_COLOURS = {
+  happy:     '#22c55e', neutral: '#3b82f6', surprised: '#f59e0b',
+  fearful:   '#a855f7', disgusted: '#06b6d4', angry: '#ef4444', sad: '#6366f1',
+};
+
+const renderEmotionBars = (share) => {
+  const sorted = Object.entries(share).sort((a, b) => b[1] - a[1]);
+  emotionBarsEl.innerHTML = sorted.map(([emotion, pct]) => `
+    <div class="em-bar-row">
+      <div class="em-bar-label">${emotion}</div>
+      <div class="em-bar-track">
+        <div class="em-bar-fill" style="width:${pct}%;background:${EMOTION_COLOURS[emotion]||'#60a5fa'}"></div>
+      </div>
+      <div class="em-bar-pct">${pct}%</div>
+    </div>
+  `).join('');
+};
+
+/* ---- Render attention sparkline ---- */
+const renderSpark = (data) => {
+  const max = Math.max(...data, 1);
+  attSpark.innerHTML = data.map(v => `
+    <div class="mini-spark-bar" style="height:${(v/max)*100}%"></div>
+  `).join('');
+};
+
+/* ---- Add alert ---- */
+let alertDebounce = {};
+const addAlert = (colour, text, key) => {
+  if (key && alertDebounce[key]) return;
+  if (key) {
+    alertDebounce[key] = true;
+    setTimeout(() => delete alertDebounce[key], 8000);
+  }
+  const now = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  alerts.unshift({ colour, text, time: now });
+  if (alerts.length > 6) alerts.pop();
+  alertList.innerHTML = alerts.map(a => `
+    <div class="alert-item">
+      <div class="alert-dot" style="background:${a.colour}"></div>
+      <div>
+        <div class="alert-text">${a.text}</div>
+        <div class="alert-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+};
+
+/* ---- Format duration ---- */
+const fmtDuration = (secs) => {
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+};
+
+/* ---- Handle EmotionEngine updates ---- */
+EmotionEngine.onUpdate((data) => {
+  fpsCounter++;
+
+  /* Attention */
+  const att = data.avgAttention;
+  attVal.textContent = att || '—';
+  attLabel.textContent = att >= 75 ? '🟢 High engagement' :
+                         att >= 45 ? '🟡 Moderate engagement' :
+                                     '🔴 Low engagement — attention needed';
+
+  /* Sparkline */
+  if (att) {
+    sparkData.push(att);
+    if (sparkData.length > 20) sparkData.shift();
+    renderSpark(sparkData);
+  }
+
+  /* Emotion bars */
+  if (data.emotionShare) renderEmotionBars(data.emotionShare);
+
+  /* Session stats */
+  sessTime.textContent   = fmtDuration(data.sessionDuration);
+  sessFrames.textContent = data.frameCount;
+  sessFaces.textContent  = data.faceCount;
+
+  /* Face count pill */
+  const fc = data.faceCount;
+  faceCountLabel.textContent = fc === 1 ? '1 face detected' : `${fc} faces detected`;
+
+  /* Alerts */
+  if (att > 0 && att < 30) addAlert('#ef4444', `⚠️ Low engagement detected — average attention ${att}%`, 'low_att');
+  if (fc === 0 && running) addAlert('#f59e0b', '⚠️ No faces detected in frame', 'no_face');
+  if (data.emotionShare?.angry > 20) addAlert('#ef4444', `😠 High anger/frustration detected (${data.emotionShare.angry}%)`, 'angry');
+  if (data.emotionShare?.happy > 50) addAlert('#22c55e', `😊 Strong positive emotion — class is engaged (${data.emotionShare.happy}%)`, 'happy');
+});
+
+/* ---- Start handler ---- */
+const startAnalysis = async () => {
+  if (running) return;
+
+  /* Show loading */
+  camPlaceholder.classList.add('hidden');
+  camLoading.style.display = 'flex';
+
+  try {
+    /* Load models */
+    if (!modelsLoaded) {
+      const steps = [
+        { pct: 20, label: 'Loading AI models…',    detail: 'Loading Face Detector…' },
+        { pct: 55, label: 'Loading AI models…',    detail: 'Loading Emotion Classifier…' },
+        { pct: 80, label: 'Loading AI models…',    detail: 'Loading Landmark Model…' },
+        { pct: 95, label: 'Initialising engine…',  detail: 'Warming up TensorFlow.js…' },
+      ];
+      let i = 0;
+      const step = () => {
+        if (i < steps.length) {
+          loadingText.textContent   = steps[i].label;
+          loadingDetail.textContent = steps[i].detail;
+          loadingFill.style.width   = steps[i].pct + '%';
+          i++;
+          setTimeout(step, 600);
+        }
+      };
+      step();
+
+      await EmotionEngine.loadModels(MODEL_PATH);
+      modelsLoaded = true;
+    }
+
+    loadingText.textContent   = 'Starting camera…';
+    loadingDetail.textContent = 'Requesting webcam access…';
+    loadingFill.style.width   = '100%';
+
+    /* Start camera */
+    await EmotionEngine.startCamera(videoEl, overlayCanvas);
+
+    /* Show video */
+    videoEl.style.display       = 'block';
+    overlayCanvas.style.display = 'block';
+    camLoading.style.display    = 'none';
+
+    /* Show UI elements */
+    liveBadge.style.display     = 'flex';
+    fpsBadge.style.display      = 'block';
+    faceCountPill.style.display = 'flex';
+
+    startBtn.style.display      = 'none';
+    stopBtn.style.display       = 'grid';
+    snapBtn.style.display       = 'grid';
+    navStartBtn.textContent     = 'Stop Camera';
+    navStartBtn.style.background = '#ef4444';
+
+    running = true;
+    EmotionEngine.startDetection(700);
+    startFPSCounter();
+
+    addAlert('#22c55e', '✅ Camera started — real-time emotion analysis active', 'start');
+
+  } catch (err) {
+    camLoading.style.display = 'none';
+    camPlaceholder.classList.remove('hidden');
+
+    if (err.name === 'NotAllowedError') {
+      showError('Camera access was denied. Please allow camera permissions in your browser and try again.');
+    } else if (err.name === 'NotFoundError') {
+      showError('No camera found. Please connect a webcam and try again.');
+    } else {
+      showError(`Error: ${err.message}`);
+    }
+    console.error('[Camera]', err);
+  }
+};
+
+/* ---- Stop handler ---- */
+const stopAnalysis = () => {
+  // Save session data to localStorage BEFORE stopping
+  const summary = EmotionEngine.getSessionSummary();
+  if (summary.totalFrames > 0) {
+    try {
+      localStorage.setItem('smartclass_camera_session', JSON.stringify({
+        ...summary,
+        savedAt: new Date().toISOString(),
+      }));
+      addAlert('#3b82f6', `💾 Session saved — ${summary.totalFrames} frames, ${summary.avgAttention}% avg attention`, 'saved');
+    } catch (e) {
+      console.warn('[Camera] Could not save session:', e);
+    }
+  }
+
+  EmotionEngine.stopCamera();
+  stopFPSCounter();
+  running = false;
+
+  videoEl.style.display       = 'none';
+  overlayCanvas.style.display = 'none';
+  liveBadge.style.display     = 'none';
+  fpsBadge.style.display      = 'none';
+  faceCountPill.style.display = 'none';
+  startBtn.style.display      = 'grid';
+  stopBtn.style.display       = 'none';
+  snapBtn.style.display       = 'none';
+  camPlaceholder.classList.remove('hidden');
+
+  navStartBtn.textContent    = 'Start Camera';
+  navStartBtn.style.background = '';
+
+  addAlert('rgba(255,255,255,.3)', '⏹️ Camera stopped', 'stop');
+};
+
+/* ---- Snapshot ---- */
+const takeSnapshot = () => {
+  const c = document.createElement('canvas');
+  c.width  = videoEl.videoWidth;
+  c.height = videoEl.videoHeight;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(videoEl, 0, 0);
+  ctx.drawImage(overlayCanvas, 0, 0);
+  const a = document.createElement('a');
+  a.download = `smartclass-snapshot-${Date.now()}.png`;
+  a.href = c.toDataURL();
+  a.click();
+  addAlert('#3b82f6', '📸 Snapshot saved', 'snap');
+};
+
+/* ---- Wire events ---- */
+startBtn.addEventListener('click', startAnalysis);
+navStartBtn.addEventListener('click', () => running ? stopAnalysis() : startAnalysis());
+stopBtn.addEventListener('click', stopAnalysis);
+snapBtn.addEventListener('click', takeSnapshot);
+</script>
+</body>
+</html>

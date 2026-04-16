@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live NLP Demo — Smart Classroom Engagement Analyzer</title>
+  <meta name="description" content="Ask the Smart Classroom AI a plain-English question about your class — see instant engagement reports, emotion summaries, and participation data." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><text y='.9em' font-size='70' x='12'>🎓</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar" id="navbar" style="background:rgba(15,23,42,.9);backdrop-filter:blur(20px);">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="nav-logo-text" style="color:#fff">Smart<span>Class</span></div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="index.html"    class="nav-link" style="color:rgba(255,255,255,.75)" data-page="index.html">Home</a></li>
+      <li><a href="index.html#how-it-works" class="nav-link" style="color:rgba(255,255,255,.75)">How It Works</a></li>
+      <li><a href="features.html" class="nav-link" style="color:rgba(255,255,255,.75)" data-page="features.html">Features</a></li>
+      <li><a href="camera.html"   class="nav-link" style="color:rgba(255,255,255,.75)" data-page="camera.html">Live Camera</a></li>
+      <li><a href="demo.html"     class="nav-link active" style="color:#fff;background:rgba(255,255,255,.12)" data-page="demo.html">NLP Demo</a></li>
+    </ul>
+
+    <a href="features.html" class="btn btn-ghost nav-cta" style="padding:9px 20px;font-size:.85rem;">
+      All Features
+    </a>
+
+    <button class="hamburger" id="hamburger" aria-label="Open menu" style="color:#fff">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="index.html"    class="nav-link">Home</a>
+  <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+  <a href="features.html" class="nav-link">Features</a>
+  <a href="camera.html"   class="nav-link">Live Camera</a>
+  <a href="demo.html"     class="nav-link">NLP Demo</a>
+  <a href="camera.html" class="btn btn-primary" style="margin-top:8px;">Start Camera →</a>
+</div>
+
+<!-- ===================== DEMO HERO ===================== -->
+<section class="demo-hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-orb hero-orb-1" style="width:300px;height:300px;top:-60px;right:-60px"></div>
+  <div class="hero-orb hero-orb-2" style="width:200px;height:200px;bottom:-30px;left:-30px"></div>
+  <div class="container" style="position:relative">
+    <div class="tag reveal">Interactive Demo</div>
+    <h1 class="section-title reveal delay-1">Ask Anything About Your Class</h1>
+    <p class="section-subtitle reveal delay-2">
+      Type a plain-English question below. Our AI engine will analyse simulated 
+      classroom data and return an instant engagement report — no setup required.
+    </p>
+  </div>
+</section>
+
+<!-- ===================== CAMERA SESSION BANNER ===================== -->
+<div id="cameraSessionBanner" style="display:none;background:linear-gradient(90deg,#1e3a8a,#0891b2);border-bottom:1px solid rgba(255,255,255,.15);padding:10px 0">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#fff">
+      <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse-dot 1.5s infinite"></div>
+      <strong>Live session data loaded</strong> — NLP queries will use your real camera session
+      <span id="bannerSessionInfo" style="color:rgba(255,255,255,.6)"></span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="camera.html" style="font-size:.8rem;color:rgba(255,255,255,.7);text-decoration:underline">Back to Camera</a>
+      <button onclick="clearCameraSession()" style="font-size:.8rem;color:rgba(255,255,255,.5);background:none;border:none;cursor:pointer;text-decoration:underline">Clear session</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DEMO SECTION ===================== -->
+<section class="demo-section">
+  <div class="container">
+
+    <div class="demo-layout">
+
+      <!-- ---- Query Panel ---- -->
+      <div class="query-panel reveal-left">
+        <div class="query-panel-title">Ask a Question</div>
+        <p class="query-panel-sub">Type your question below or click a suggestion chip.</p>
+
+        <!-- Input -->
+        <div class="query-input-wrap">
+          <input
+            type="text"
+            id="queryInput"
+            class="query-input"
+            placeholder="e.g. Which students were disengaged today?"
+            autocomplete="off"
+          />
+          <button class="query-mic" title="Voice input (coming soon)" tabindex="-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+              <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8"  y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Suggestion chips -->
+        <div class="query-suggestions">
+          <div class="query-suggestions-label">Quick Suggestions</div>
+          <div class="suggestions-list">
+            <button class="suggestion-chip" data-query="Which students were disengaged today?">Disengaged students</button>
+            <button class="suggestion-chip" data-query="What was the average class attention score?">Avg attention</button>
+            <button class="suggestion-chip" data-query="Show me emotion breakdown for today">Emotion report</button>
+            <button class="suggestion-chip" data-query="Who participated the most this session?">Participation</button>
+            <button class="suggestion-chip" data-query="Give me a full class summary report">Full summary</button>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="query-options">
+          <div class="option-row">
+            <label class="option-label" for="classSelect">Class</label>
+            <select id="classSelect" class="select-styled">
+              <option>Class 10-B — Mathematics</option>
+              <option>Class 9-A — Science</option>
+              <option>Class 11-C — Physics</option>
+              <option>Class 8-D — English</option>
+            </select>
+          </div>
+          <div class="option-row">
+            <label class="option-label" for="periodSelect">Period</label>
+            <select id="periodSelect" class="select-styled">
+              <option>Today — All Periods</option>
+              <option>Period 1 (08:00–09:00)</option>
+              <option>Period 2 (10:00–11:00)</option>
+              <option>Period 3 (11:00–12:00)</option>
+              <option>This Week</option>
+            </select>
+          </div>
+          <div class="option-row">
+            <label class="option-label" for="metricSelect">Focus On</label>
+            <select id="metricSelect" class="select-styled">
+              <option>All Metrics</option>
+              <option>Attention only</option>
+              <option>Emotions only</option>
+              <option>Participation only</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="query-btn-row">
+          <button id="getReportBtn" class="btn btn-primary btn-full">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            Get Report
+          </button>
+          <button id="clearBtn" class="btn btn-outline" style="padding:13px 18px" title="Clear">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ---- Result Panel ---- -->
+      <div class="result-panel reveal-right">
+        <div class="result-header">
+          <div class="result-title">
+            <svg style="width:18px;height:18px;vertical-align:-3px;margin-right:6px;color:var(--primary-500)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+            Engagement Report
+          </div>
+          <div class="result-status idle" id="resultStatus">
+            <div class="result-status-dot"></div> Idle
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="result-empty" id="resultEmpty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <p>Submit a question to generate an<br>AI-powered engagement report.</p>
+        </div>
+
+        <!-- Loading skeleton -->
+        <div class="result-loading" id="resultLoading">
+          <div class="skeleton w-3_4"></div>
+          <div class="skeleton w-full mt-8"></div>
+          <div class="skeleton w-2_3 mt-8"></div>
+          <div class="skeleton h-32 mt-8" style="margin-top:20px"></div>
+          <div class="skeleton w-full mt-8"></div>
+          <div class="skeleton w-full mt-8"></div>
+          <div class="skeleton w-1_2 mt-8"></div>
+        </div>
+
+        <!-- Result content -->
+        <div class="result-content" id="resultContent">
+          <div class="result-summary">
+            <div class="result-summary-label">AI Analysis</div>
+            <div class="result-summary-text" id="resultSummaryText"></div>
+          </div>
+
+          <div>
+            <div class="result-students-label">Student Breakdown</div>
+            <div class="student-rows" id="studentRows"></div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:.82rem;padding:9px 12px"
+              onclick="downloadReport()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export PDF
+            </button>
+            <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:.82rem;padding:9px 12px"
+              onclick="shareReport()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /demo-layout -->
+
+    <!-- ---- Saved Reports ---- -->
+    <div id="savedReportsPanel" class="history-panel reveal" style="margin-top:40px;display:none">
+      <div class="history-title" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Saved Reports
+        </div>
+        <button onclick="clearAllReports()" style="font-size:.75rem;color:var(--neutral-400);background:none;border:none;cursor:pointer;font-family:inherit">Clear all</button>
+      </div>
+      <div id="savedReportsList"></div>
+    </div>
+
+    <!-- ---- Query History ---- -->
+    <div class="history-panel reveal" style="margin-top:16px">
+      <div class="history-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Recent Queries
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== HOW DEMO WORKS ===================== -->
+<section class="section">
+  <div class="container">
+    <div class="text-center reveal" style="margin-bottom:48px">
+      <div class="tag">About This Demo</div>
+      <h2 class="section-title">What You're Seeing</h2>
+      <p class="section-subtitle">
+        This is a client-side simulation of the full SmartClass AI engine.
+        In production, responses draw from live sensor data.
+      </p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div class="step-card reveal delay-1" style="text-align:center">
+        <div class="step-icon-wrap" style="margin:0 auto 16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--primary-600)">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <h3 class="step-title">Natural Language Input</h3>
+        <p class="step-desc">Type any question about student engagement. The system parses intent using keyword extraction and semantic similarity.</p>
+      </div>
+      <div class="step-card reveal delay-2" style="text-align:center">
+        <div class="step-icon-wrap" style="margin:0 auto 16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--primary-600)">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </div>
+        <h3 class="step-title">AI Intent Resolution</h3>
+        <p class="step-desc">The engine classifies your query into one of 5 report types: disengagement, attention, emotions, participation, or overview.</p>
+      </div>
+      <div class="step-card reveal delay-3" style="text-align:center">
+        <div class="step-icon-wrap" style="margin:0 auto 16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--primary-600)">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18M9 21V9"/>
+          </svg>
+        </div>
+        <h3 class="step-title">Structured Report</h3>
+        <p class="step-desc">Results are returned as a human-readable summary plus a per-student breakdown with engagement badges and metrics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:0">
+          <div class="nav-logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="nav-logo-text">Smart<span>Class</span></div>
+        </a>
+        <p class="footer-tagline">
+          Empowering teachers with AI-driven classroom insights — 
+          improving student outcomes through data, not guesswork.
+        </p>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Navigate</div>
+        <ul class="footer-links">
+          <li><a href="index.html"    class="footer-link">Home</a></li>
+          <li><a href="index.html#how-it-works" class="footer-link">How It Works</a></li>
+          <li><a href="features.html" class="footer-link">Features</a></li>
+          <li><a href="camera.html"   class="footer-link">Live Camera</a></li>
+          <li><a href="demo.html"     class="footer-link">NLP Demo</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Features</div>
+        <ul class="footer-links">
+          <li><a href="features.html" class="footer-link">Emotion Detection</a></li>
+          <li><a href="features.html" class="footer-link">Participation Analysis</a></li>
+          <li><a href="features.html" class="footer-link">Teacher Dashboard</a></li>
+          <li><a href="features.html" class="footer-link">NLP Query Interface</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Contact</div>
+        <ul class="footer-links">
+          <li><a href="#" class="footer-link">support@smartclass.ai</a></li>
+          <li><a href="#" class="footer-link">Documentation</a></li>
+          <li><a href="#" class="footer-link">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SmartClass AI. All rights reserved.</p>
+      <p class="footer-built">Built with <span>♥</span> for better education</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/demo.js"></script>
+<script>
+  /* ---- Camera session integration ---- */
+  const cameraSessionBanner  = document.getElementById('cameraSessionBanner');
+  const bannerSessionInfo    = document.getElementById('bannerSessionInfo');
+  const savedReportsPanel    = document.getElementById('savedReportsPanel');
+  const savedReportsList     = document.getElementById('savedReportsList');
+
+  const loadCameraSession = () => {
+    const raw = localStorage.getItem('smartclass_camera_session');
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  };
+
+  const showCameraBanner = () => {
+    const sess = loadCameraSession();
+    if (!sess) return;
+    cameraSessionBanner.style.display = 'block';
+    const dur = Math.round(sess.durationSeconds / 60);
+    const dom = sess.dominantEmotion || 'neutral';
+    bannerSessionInfo.textContent = `• ${dur} min session • dominant: ${dom} • avg attention: ${sess.avgAttention}%`;
+  };
+  showCameraBanner();
+
+  window.clearCameraSession = () => {
+    localStorage.removeItem('smartclass_camera_session');
+    cameraSessionBanner.style.display = 'none';
+  };
+
+  /* ---- Saved Reports ---- */
+  const REPORTS_KEY = 'smartclass_saved_reports';
+
+  const getSavedReports = () => {
+    try { return JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]'); }
+    catch { return []; }
+  };
+
+  const BADGE_COLOURS = { low: '#ef4444', medium: '#f59e0b', high: '#22c55e' };
+
+  const renderSavedReports = () => {
+    const reports = getSavedReports();
+    if (reports.length === 0) {
+      savedReportsPanel.style.display = 'none';
+      return;
+    }
+    savedReportsPanel.style.display = 'block';
+    savedReportsList.innerHTML = reports.map((r, i) => `
+      <div style="border:1px solid var(--neutral-100);border-radius:var(--radius-md);padding:16px;margin-bottom:12px;cursor:pointer;transition:box-shadow .2s" onmouseenter="this.style.boxShadow='var(--shadow-md)'" onmouseleave="this.style.boxShadow=''" onclick="expandReport(${i})">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:.9rem;font-weight:600;color:var(--neutral-800)">${r.query}</div>
+          <div style="font-size:.72rem;color:var(--neutral-400);white-space:nowrap;margin-left:12px">${r.savedAt}</div>
+        </div>
+        <div style="font-size:.82rem;color:var(--neutral-500);line-height:1.5;margin-bottom:10px">${r.summary.slice(0, 120)}…</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${(r.students||[]).map(s => `<span style="font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:20px;background:${BADGE_COLOURS[s.badge]+'22'};color:${BADGE_COLOURS[s.badge]}">${s.name} • ${BADGE_COLOURS[s.badge] === '#22c55e' ? '✅' : BADGE_COLOURS[s.badge] === '#ef4444' ? '⚠️' : '⚡'} ${s.badge}</span>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button onclick="event.stopPropagation();rerunReport(${i})" style="font-size:.75rem;padding:4px 12px;border-radius:20px;border:1px solid var(--primary-200);color:var(--primary-600);background:var(--primary-50);cursor:pointer">↺ Re-run</button>
+          <button onclick="event.stopPropagation();deleteReport(${i})" style="font-size:.75rem;padding:4px 12px;border-radius:20px;border:1px solid var(--neutral-200);color:var(--neutral-400);background:#fff;cursor:pointer">✕ Delete</button>
+        </div>
+      </div>
+    `).join('');
+  };
+  renderSavedReports();
+
+  window.clearAllReports = () => {
+    if (!confirm('Delete all saved reports?')) return;
+    localStorage.removeItem(REPORTS_KEY);
+    renderSavedReports();
+  };
+
+  window.deleteReport = (i) => {
+    const reports = getSavedReports();
+    reports.splice(i, 1);
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+    renderSavedReports();
+  };
+
+  window.rerunReport = (i) => {
+    const r = getSavedReports()[i];
+    if (r && queryInput) {
+      queryInput.value = r.query;
+      runQuery();
+    }
+  };
+
+  window.expandReport = (i) => {
+    const r = getSavedReports()[i];
+    if (!r) return;
+    /* Populate into the query panel as if it was just run */
+    if (queryInput) queryInput.value = r.query;
+    resultSummaryText.textContent = r.summary;
+    studentRowsEl.innerHTML = (r.students||[]).map(s => `
+      <div class="student-row">
+        <div class="student-avatar" style="background:${s.color}">${s.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+        <div class="student-name">${s.name}</div>
+        <div class="student-metric">${s.metric}</div>
+        <div class="student-badge badge-${s.badge}">${{low:'Low',medium:'Medium',high:'High'}[s.badge]}</div>
+      </div>
+    `).join('');
+    resultEmpty.style.display = 'none';
+    resultContent.classList.add('visible');
+    const el = document.getElementById('resultStatus');
+    el.className = 'result-status done';
+    el.innerHTML = '<div class="result-status-dot"></div> Restored';
+    document.querySelector('.result-panel')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
+
+  /* Hook into demo.js saveReport global */
+  window.onReportSaved = renderSavedReports;
+
+  /* ---- PDF export (real content) ---- */
+  function downloadReport() {
+    const query   = queryInput?.value || 'Report';
+    const summary = resultSummaryText?.textContent || '';
+    const rows    = [...(studentRowsEl?.querySelectorAll('.student-row') || [])]
+      .map(r => `  • ${r.querySelector('.student-name')?.textContent} — ${r.querySelector('.student-metric')?.textContent} (${r.querySelector('.student-badge')?.textContent})`);
+    const blob = new Blob([
+      `SmartClass Engagement Report\n${'='.repeat(40)}\n`,
+      `Query: ${query}\n`,
+      `Generated: ${new Date().toLocaleString()}\n\n`,
+      `AI ANALYSIS:\n${summary}\n\n`,
+      `STUDENT BREAKDOWN:\n${rows.join('\n')}\n`,
+    ], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = `smartclass-report-${Date.now()}.txt`;
+    a.click();
+  }
+
+  function shareReport() {
+    const summary = resultSummaryText?.textContent || '';
+    if (navigator.share && summary) {
+      navigator.share({ title: 'SmartClass Report', text: summary, url: location.href });
+    } else {
+      navigator.clipboard.writeText(summary || location.href)
+        .then(() => alert('🔗 Report text copied to clipboard!'));
+    }
+  }
+</script>
+</body>
+</html>

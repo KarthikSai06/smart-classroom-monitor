@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Features — Smart Classroom Engagement Analyzer</title>
+  <meta name="description" content="Explore the full feature set: real-time emotion detection, speech analysis, cloud processing, teacher dashboard, NLP queries, and privacy-first data handling." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><text y='.9em' font-size='70' x='12'>🎓</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar" id="navbar" style="background:rgba(255,255,255,.92);backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--neutral-200)">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="nav-logo-text">Smart<span>Class</span></div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="index.html"    class="nav-link" data-page="index.html">Home</a></li>
+      <li><a href="index.html#how-it-works" class="nav-link">How It Works</a></li>
+      <li><a href="features.html" class="nav-link active" data-page="features.html">Features</a></li>
+      <li><a href="camera.html"   class="nav-link" data-page="camera.html">Live Camera</a></li>
+      <li><a href="demo.html"     class="nav-link" data-page="demo.html">NLP Demo</a></li>
+    </ul>
+
+    <a href="camera.html" class="btn btn-primary nav-cta" style="padding:9px 20px; font-size:.85rem;">
+      Live Camera →
+    </a>
+
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span class="ham-line" style="background:var(--neutral-700)"></span>
+      <span class="ham-line" style="background:var(--neutral-700)"></span>
+      <span class="ham-line" style="background:var(--neutral-700)"></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="index.html"    class="nav-link">Home</a>
+  <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+  <a href="features.html" class="nav-link">Features</a>
+  <a href="camera.html"   class="nav-link">Live Camera</a>
+  <a href="demo.html"     class="nav-link">NLP Demo</a>
+  <a href="camera.html" class="btn btn-primary" style="margin-top:8px;">Start Camera →</a>
+</div>
+
+<!-- ===================== FEATURES HERO ===================== -->
+<section class="features-hero">
+  <div class="container">
+    <div class="tag">Platform Capabilities</div>
+    <h1 class="section-title reveal">Everything Your Classroom Needs</h1>
+    <p class="section-subtitle reveal delay-1">
+      Six powerful, AI-driven capabilities working in harmony — so you can focus
+      on teaching while the system handles the data.
+    </p>
+  </div>
+</section>
+
+<!-- ===================== FEATURES GRID ===================== -->
+<section class="section">
+  <div class="container">
+    <div class="features-grid">
+
+      <!-- 1 — Real-time emotion detection -->
+      <div class="feature-card reveal delay-1">
+        <div class="feature-icon-wrap fi-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        </div>
+        <h2 class="feature-title">Real-Time Emotion Detection</h2>
+        <p class="feature-desc">
+          Computer vision models continuously analyse facial micro-expressions to
+          classify student states: focused, confused, bored, happy, or disengaged —
+          with per-frame updates every 500ms.
+        </p>
+        <div class="tech-pills">
+          <span class="tech-pill">OpenCV</span>
+          <span class="tech-pill">FER+</span>
+          <span class="tech-pill">DeepFace</span>
+          <span class="tech-pill">WebRTC</span>
+        </div>
+        <a href="#" class="feature-link">
+          View documentation
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- 2 — Speech and participation -->
+      <div class="feature-card reveal delay-2">
+        <div class="feature-icon-wrap fi-cyan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+            <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8"  y1="23" x2="16" y2="23"/>
+          </svg>
+        </div>
+        <h2 class="feature-title">Speech & Participation Analysis</h2>
+        <p class="feature-desc">
+          Directional microphones track who is speaking, for how long, and with
+          what confidence. NLP sentiment analysis scores verbal contributions —
+          helping identify silent students who need encouragement.
+        </p>
+        <div class="tech-pills">
+          <span class="tech-pill">Whisper ASR</span>
+          <span class="tech-pill">pyAudioAnalysis</span>
+          <span class="tech-pill">BERT NLP</span>
+        </div>
+        <a href="#" class="feature-link">
+          View documentation
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- 3 — Cloud processing -->
+      <div class="feature-card reveal delay-3">
+        <div class="feature-icon-wrap fi-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <h2 class="feature-title">Cloud-Based Processing</h2>
+        <p class="feature-desc">
+          Edge devices handle local inference for minimal latency. Aggregated,
+          anonymised metrics sync to a secure cloud for long-term trend analysis,
+          cross-classroom benchmarking, and school-wide reporting.
+        </p>
+        <div class="tech-pills">
+          <span class="tech-pill">AWS IoT</span>
+          <span class="tech-pill">MQTT</span>
+          <span class="tech-pill">TensorFlow Lite</span>
+          <span class="tech-pill">Kafka</span>
+        </div>
+        <a href="#" class="feature-link">
+          View documentation
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- 4 — Teacher dashboard -->
+      <div class="feature-card reveal delay-4">
+        <div class="feature-icon-wrap fi-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18M9 21V9"/>
+          </svg>
+        </div>
+        <h2 class="feature-title">Teacher Dashboard</h2>
+        <p class="feature-desc">
+          A clean, intuitive web dashboard gives teachers a live view of class
+          engagement. Drill down into individual student timelines, export PDF
+          reports, and receive smart alerts when attention drops below threshold.
+        </p>
+        <div class="tech-pills">
+          <span class="tech-pill">React</span>
+          <span class="tech-pill">Chart.js</span>
+          <span class="tech-pill">WebSocket</span>
+          <span class="tech-pill">D3.js</span>
+        </div>
+        <a href="demo.html" class="feature-link">
+          Try live demo
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- 5 — NLP query interface -->
+      <div class="feature-card reveal delay-5">
+        <div class="feature-icon-wrap fi-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <h2 class="feature-title">Natural Language Query Interface</h2>
+        <p class="feature-desc">
+          Teachers ask plain English questions — "Who was most distracted during
+          Period 3?" — and the system returns structured, visual reports instantly.
+          No SQL, no filters, no training required.
+        </p>
+        <div class="tech-pills">
+          <span class="tech-pill">GPT-4o</span>
+          <span class="tech-pill">LangChain</span>
+          <span class="tech-pill">RAG</span>
+          <span class="tech-pill">Semantic Search</span>
+        </div>
+        <a href="demo.html" class="feature-link">
+          Try it now
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- 6 — Privacy -->
+      <div class="feature-card reveal delay-6">
+        <div class="feature-icon-wrap fi-rose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h2 class="feature-title">Privacy-Compliant Data Handling</h2>
+        <p class="feature-desc">
+          No raw video or audio ever leaves the classroom. All biometric data is
+          processed on-device and immediately discarded. Aggregated metrics are
+          anonymised, encrypted at rest and in transit — fully FERPA & GDPR compliant.
+        </p>
+        <div class="tech-pills">
+          <span class="tech-pill">On-Device AI</span>
+          <span class="tech-pill">AES-256</span>
+          <span class="tech-pill">FERPA</span>
+          <span class="tech-pill">GDPR</span>
+        </div>
+        <a href="#" class="feature-link">
+          Privacy policy
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMPARE / STATS ===================== -->
+<section class="section section--alt">
+  <div class="container">
+    <div class="text-center reveal" style="margin-bottom:56px">
+      <div class="tag">Impact</div>
+      <h2 class="section-title">Measurable Results</h2>
+      <p class="section-subtitle">Data from pilot programmes across 500+ classrooms worldwide.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px">
+      <!-- stat 1 -->
+      <div class="step-card reveal delay-1" style="text-align:center">
+        <div style="font-size:2.8rem;font-weight:800;font-family:var(--font-head);background:var(--grad-btn);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          <span data-counter data-target="38" data-suffix="%">0%</span>
+        </div>
+        <div class="step-title" style="margin-top:8px">Improvement in Engagement</div>
+        <div class="step-desc">Average uplift in student engagement scores after 8 weeks.</div>
+      </div>
+      <!-- stat 2 -->
+      <div class="step-card reveal delay-2" style="text-align:center">
+        <div style="font-size:2.8rem;font-weight:800;font-family:var(--font-head);background:var(--grad-btn);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          <span data-counter data-target="95" data-suffix="%">0%</span>
+        </div>
+        <div class="step-title" style="margin-top:8px">Emotion Accuracy</div>
+        <div class="step-desc">Validated on diverse student populations and lighting conditions.</div>
+      </div>
+      <!-- stat 3 -->
+      <div class="step-card reveal delay-3" style="text-align:center">
+        <div style="font-size:2.8rem;font-weight:800;font-family:var(--font-head);background:var(--grad-btn);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          <span data-counter data-target="500" data-suffix="+">0+</span>
+        </div>
+        <div class="step-title" style="margin-top:8px">Schools Deployed</div>
+        <div class="step-desc">Active deployments across 14 countries and 6 languages.</div>
+      </div>
+      <!-- stat 4 -->
+      <div class="step-card reveal delay-4" style="text-align:center">
+        <div style="font-size:2.8rem;font-weight:800;font-family:var(--font-head);background:var(--grad-btn);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          <span data-counter data-target="12" data-suffix="ms">0ms</span>
+        </div>
+        <div class="step-title" style="margin-top:8px">Average Latency</div>
+        <div class="step-desc">Edge inference ensures near-zero lag in real-time processing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA ===================== -->
+<section style="background:var(--grad-hero);padding-block:72px;text-align:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px"></div>
+  <div class="container" style="position:relative">
+    <h2 class="section-title reveal" style="color:#fff;margin-bottom:16px">See it in action</h2>
+    <p class="section-subtitle reveal delay-1" style="color:rgba(255,255,255,.7);margin:0 auto 32px">
+      Ask the system a question in plain English and watch it generate a report instantly.
+    </p>
+    <a href="demo.html" class="btn btn-white reveal delay-2">Open Live Demo →</a>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="margin-bottom:0">
+          <div class="nav-logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="nav-logo-text">Smart<span>Class</span></div>
+        </a>
+        <p class="footer-tagline">
+          Empowering teachers with AI-driven classroom insights — 
+          improving student outcomes through data, not guesswork.
+        </p>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Navigate</div>
+        <ul class="footer-links">
+          <li><a href="index.html"    class="footer-link">Home</a></li>
+          <li><a href="index.html#how-it-works" class="footer-link">How It Works</a></li>
+          <li><a href="features.html" class="footer-link">Features</a></li>
+          <li><a href="camera.html"   class="footer-link">Live Camera</a></li>
+          <li><a href="demo.html"     class="footer-link">NLP Demo</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Features</div>
+        <ul class="footer-links">
+          <li><a href="#" class="footer-link">Emotion Detection</a></li>
+          <li><a href="#" class="footer-link">Participation Analysis</a></li>
+          <li><a href="#" class="footer-link">Teacher Dashboard</a></li>
+          <li><a href="#" class="footer-link">NLP Query Interface</a></li>
+          <li><a href="#" class="footer-link">Privacy & Compliance</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Contact</div>
+        <ul class="footer-links">
+          <li><a href="#" class="footer-link">support@smartclass.ai</a></li>
+          <li><a href="#" class="footer-link">Documentation</a></li>
+          <li><a href="#" class="footer-link">Privacy Policy</a></li>
+          <li><a href="#" class="footer-link">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 SmartClass AI. All rights reserved.</p>
+      <p class="footer-built">Built with <span>♥</span> for better education</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
