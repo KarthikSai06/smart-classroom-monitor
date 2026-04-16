@@ -8,6 +8,23 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><text y='.9em' font-size='70' x='12'>🎓</text></svg>" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/animations.css" />
+  <style>
+    /* Cloud reports tab UI */
+    .reports-tabs { display:flex; gap:0; margin-bottom:16px; border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--neutral-200); }
+    .reports-tab  { flex:1; padding:9px 14px; font-size:.8rem; font-weight:600; text-align:center; cursor:pointer; border:none; background:var(--neutral-50); color:var(--neutral-500); transition:background .2s,color .2s; font-family:inherit; }
+    .reports-tab.active { background:#fff; color:var(--primary-600); box-shadow:inset 0 -2px 0 var(--primary-500); }
+    .cloud-badge { display:inline-flex; align-items:center; gap:4px; font-size:.68rem; font-weight:700; padding:2px 7px; border-radius:20px; background:#dcfce7; color:#15803d; }
+    .cloud-badge.pending { background:#fef3c7; color:#92400e; }
+    .cloud-badge.offline { background:#f3f4f6; color:#9ca3af; }
+    .cloud-report-item { border:1px solid var(--neutral-100); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:10px; }
+    .cloud-report-q { font-size:.9rem; font-weight:600; color:var(--neutral-800); margin-bottom:4px; }
+    .cloud-report-sum { font-size:.8rem; color:var(--neutral-500); line-height:1.5; }
+    .cloud-report-meta { font-size:.72rem; color:var(--neutral-400); margin-top:6px; display:flex; align-items:center; gap:8px; }
+    .fb-status-bar { display:flex; align-items:center; gap:8px; font-size:.75rem; color:var(--neutral-500); padding:6px 0 14px; }
+    .fb-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .fb-dot.on  { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.2); }
+    .fb-dot.off { background:#d1d5db; }
+  </style>
 </head>
 <body>
 
@@ -239,16 +256,37 @@
 
     </div><!-- /demo-layout -->
 
-    <!-- ---- Saved Reports ---- -->
+    <!-- ---- Saved Reports (Local + Cloud tabbed) ---- -->
     <div id="savedReportsPanel" class="history-panel reveal" style="margin-top:40px;display:none">
-      <div class="history-title" style="justify-content:space-between">
+      <div class="history-title" style="justify-content:space-between;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Saved Reports
+          Reports
         </div>
-        <button onclick="clearAllReports()" style="font-size:.75rem;color:var(--neutral-400);background:none;border:none;cursor:pointer;font-family:inherit">Clear all</button>
+        <button onclick="clearAllReports()" style="font-size:.75rem;color:var(--neutral-400);background:none;border:none;cursor:pointer;font-family:inherit">Clear local</button>
       </div>
+
+      <!-- Firebase status indicator -->
+      <div class="fb-status-bar" id="fbStatusBar">
+        <div class="fb-dot off" id="fbDot"></div>
+        <span id="fbStatusText">Cloud: checking…</span>
+      </div>
+
+      <!-- Tab switcher -->
+      <div class="reports-tabs" id="reportsTabs">
+        <button class="reports-tab active" id="tabLocal" onclick="switchReportsTab('local')">💾 Saved Locally</button>
+        <button class="reports-tab" id="tabCloud" onclick="switchReportsTab('cloud')">☁️ Cloud Reports</button>
+      </div>
+
+      <!-- Local reports list -->
       <div id="savedReportsList"></div>
+
+      <!-- Cloud reports list (hidden by default) -->
+      <div id="cloudReportsList" style="display:none">
+        <div id="cloudReportsContent">
+          <div style="text-align:center;padding:28px 0;color:var(--neutral-400);font-size:.85rem">Click ☁️ Cloud Reports to load from database.</div>
+        </div>
+      </div>
     </div>
 
     <!-- ---- Query History ---- -->
@@ -371,6 +409,10 @@
   </div>
 </footer>
 
+<!-- Firebase Compat SDK (Google Cloud Firestore) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase.js"></script>
 <script src="js/main.js"></script>
 <script src="js/demo.js"></script>
 <script>
@@ -482,6 +524,89 @@
 
   /* Hook into demo.js saveReport global */
   window.onReportSaved = renderSavedReports;
+
+  /* ---- Firebase / Cloud status indicator ---- */
+  const fbDot        = document.getElementById('fbDot');
+  const fbStatusText = document.getElementById('fbStatusText');
+
+  const updateFirebaseStatus = () => {
+    if (window.SC_FB_READY) {
+      fbDot.className       = 'fb-dot on';
+      fbStatusText.textContent = 'Cloud: connected (Google Firestore)';
+    } else {
+      fbDot.className       = 'fb-dot off';
+      fbStatusText.textContent = 'Cloud: offline — configure Firebase in js/firebase.js';
+    }
+  };
+  setTimeout(updateFirebaseStatus, 800); // wait for firebase.js to init
+
+  /* ---- Tab switcher ---- */
+  let activeTab = 'local';
+
+  window.switchReportsTab = async (tab) => {
+    activeTab = tab;
+    document.getElementById('tabLocal').className  = 'reports-tab' + (tab === 'local'  ? ' active' : '');
+    document.getElementById('tabCloud').className  = 'reports-tab' + (tab === 'cloud' ? ' active' : '');
+    document.getElementById('savedReportsList').style.display = tab === 'local'  ? '' : 'none';
+    document.getElementById('cloudReportsList').style.display = tab === 'cloud' ? '' : 'none';
+
+    if (tab === 'cloud') await loadAndRenderCloudReports();
+  };
+
+  /* ---- Cloud reports loader ---- */
+  const cloudReportsContent = document.getElementById('cloudReportsContent');
+
+  const loadAndRenderCloudReports = async () => {
+    if (!window.SC_FB_READY) {
+      cloudReportsContent.innerHTML = `
+        <div style="text-align:center;padding:32px 0">
+          <div style="font-size:2rem;margin-bottom:12px">☁️</div>
+          <div style="font-weight:600;color:var(--neutral-700);margin-bottom:8px">Firebase not configured</div>
+          <div style="font-size:.82rem;color:var(--neutral-400);line-height:1.6">
+            Add your Firebase config to <code>js/firebase.js</code> to enable cloud sync.
+          </div>
+        </div>`;
+      return;
+    }
+
+    cloudReportsContent.innerHTML = `
+      <div style="text-align:center;padding:28px 0;color:var(--neutral-400);font-size:.85rem">
+        <div class="spinner" style="margin:0 auto 12px;width:20px;height:20px;border:2px solid var(--neutral-200);border-top-color:var(--primary-500);border-radius:50%;animation:spin .8s linear infinite"></div>
+        Loading from Google Cloud…
+      </div>`;
+
+    const reports = await window.SC_loadReports(20);
+    updateFirebaseStatus();
+
+    if (!reports.length) {
+      cloudReportsContent.innerHTML = `
+        <div style="text-align:center;padding:32px 0;color:var(--neutral-400);font-size:.85rem">
+          No cloud reports yet — run a query to save the first one!
+        </div>`;
+      return;
+    }
+
+    cloudReportsContent.innerHTML = reports.map(r => {
+      const date = r.savedAt ? new Date(r.savedAt).toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' }) : '—';
+      const pills = (r.students || []).map(s => {
+        const c = BADGE_COLOURS[s.badge] || '#6b7280';
+        return `<span style="font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:20px;background:${c}22;color:${c}">${s.name}</span>`;
+      }).join('');
+      return `
+        <div class="cloud-report-item">
+          <div class="cloud-report-q">${r.query}</div>
+          <div class="cloud-report-sum">${(r.summary || '').slice(0, 140)}…</div>
+          <div class="cloud-report-meta">
+            <span class="cloud-badge">☁ ${r._id ? r._id.slice(0, 8) : 'cloud'}</span>
+            <span>${date}</span>
+          </div>
+          ${pills ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${pills}</div>` : ''}
+        </div>`;
+    }).join('');
+  };
+
+  /* Load cloud status silently on page load */
+  setTimeout(updateFirebaseStatus, 1000);
 
   /* ---- PDF export (real content) ---- */
   function downloadReport() {

@@ -133,29 +133,56 @@ const setStatus = (state) => {
   resultStatus.innerHTML = `${dot} ${labels[state]}`;
 };
 
-/* ---- localStorage helpers ---- */
+/* ---- localStorage + Firestore dual-write helpers ---- */
 const REPORTS_KEY = 'smartclass_saved_reports';
 
-const saveReportToStorage = (query, responseKey, data) => {
+const saveReportToStorage = async (query, responseKey, data) => {
+  const now = new Date();
+  const report = {
+    id:          Date.now(),
+    query,
+    responseKey,
+    summary:     data.summary,
+    students:    data.students || [],
+    savedAt:     now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+    timestamp:   now.getTime(),
+    _cloudSynced: false,
+  };
+
+  /* 1. Save locally first (instant, always works) */
   try {
     const reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
-    const now = new Date();
-    reports.unshift({
-      id:       Date.now(),
-      query,
-      responseKey,
-      summary:  data.summary,
-      students: data.students || [],
-      savedAt:  now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
-      timestamp: now.getTime(),
-    });
-    // Keep last 20 reports
+    reports.unshift(report);
     if (reports.length > 20) reports.pop();
     localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
-    // Notify page to re-render saved reports list
     if (typeof window.onReportSaved === 'function') window.onReportSaved();
   } catch (e) {
-    console.warn('[demo] Could not save report:', e);
+    console.warn('[demo] localStorage write failed:', e);
+  }
+
+  /* 2. Also save to Google Cloud Firestore (async, non-blocking) */
+  if (typeof window.SC_saveReport === 'function') {
+    const cloudId = await window.SC_saveReport({
+      query,
+      responseKey,
+      summary:   data.summary,
+      students:  data.students || [],
+      savedAt:   now.toISOString(),
+      timestamp: now.getTime(),
+    });
+    /* Mark local copy as cloud-synced */
+    if (cloudId) {
+      try {
+        const reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+        const idx = reports.findIndex(r => r.id === report.id);
+        if (idx !== -1) {
+          reports[idx]._cloudSynced = true;
+          reports[idx]._cloudId    = cloudId;
+          localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+        }
+        if (typeof window.onReportSaved === 'function') window.onReportSaved();
+      } catch (_) {}
+    }
   }
 };
 
