@@ -13,12 +13,13 @@
    ============================================================ */
 
 const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
+  apiKey:            "AIzaSyA_FXzI1S2BLavcaG9Ri7S-jJr9-_uMTrw",
+  authDomain:        "classroom-monitor-ed9b7.firebaseapp.com",
+  projectId:         "classroom-monitor-ed9b7",
+  storageBucket:     "classroom-monitor-ed9b7.firebasestorage.app",
+  messagingSenderId: "612880185204",
+  appId:             "1:612880185204:web:b1debb13e18f610e679e21",
+  measurementId:     "G-T3LWTV62TQ",
 };
 
 /* ---- Initialise (guard against double-init) ---- */
@@ -28,13 +29,13 @@ try {
     ? firebase.apps[0]
     : firebase.initializeApp(firebaseConfig);
 
-  window.SmartClassDB = firebase.firestore();
-  window.SC_FB_READY  = true;
-  console.log('[SmartClassDB] ✅ Firebase Firestore connected');
+  window.SmartClassDB  = firebase.firestore();
+  window.SmartClassGA  = firebase.analytics();   // Google Analytics
+  window.SC_FB_READY   = true;
+  console.log('[SmartClassDB] ✅ Firebase Firestore + Analytics connected');
 } catch (e) {
   window.SC_FB_READY = false;
-  console.warn('[SmartClassDB] ⚠️ Firebase init failed — running in offline mode.\n' +
-               'Did you fill in your firebaseConfig in js/firebase.js?', e.message);
+  console.warn('[SmartClassDB] ⚠️ Firebase init failed — running in offline mode.', e.message);
 }
 
 /* ============================================================
